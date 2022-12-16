@@ -72,24 +72,55 @@ const move = (pos, direction) => {
 // return { x: partToMove.x, y: partToMove.y };
 // };
 
-const moveRope = (pos) => {
-  const newPos = { ...pos };
-  return newPos;
+const moveRope = ({ ropeCurrent, ropeAhead }) => {
+  const diffInX = ropeAhead.x - ropeCurrent.x;
+  const diffInY = ropeAhead.y - ropeCurrent.y;
+
+  if (diffInX === 0 && diffInY > 1) {
+    return { x: ropeCurrent.x, y: ropeCurrent.y + 1 };
+  }
+
+  if (diffInX === 0 && diffInY < -1) {
+    return { x: ropeCurrent.x, y: ropeCurrent.y - 1 };
+  }
+
+  if (diffInX > 1 && diffInY === 0) {
+    return { x: ropeCurrent.x + 1, y: ropeCurrent.y };
+  }
+
+  if (diffInX < -1 && diffInY === 0) {
+    return { x: ropeCurrent.x - 1, y: ropeCurrent.y };
+  }
+
+  if (diffInX >= 1 && diffInY >= 1) {
+    return { x: ropeCurrent.x + 1, y: ropeCurrent.y + 1 };
+  }
+  if (diffInX >= 1 && diffInY <= -1) {
+    return { x: ropeCurrent.x + 1, y: ropeCurrent.y - 1 };
+  }
+  if (diffInX <= -1 && diffInY >= 1) {
+    return { x: ropeCurrent.x - 1, y: ropeCurrent.y + 1 };
+  }
+  if (diffInX <= -1 && diffInY <= -1) {
+    return { x: ropeCurrent.x - 1, y: ropeCurrent.y - 1 };
+  }
+
+  return { x: ropeCurrent.x, y: ropeCurrent.y };
 };
 
-const shouldMoveRope = (ropeNumBeforePos, ropeNumPos) => {
+const shouldMoveRope = ({ ropeAhead, ropeCurrent }) => {
   if (
-    ropeNumBeforePos.x - ropeNumPos.x > 1 ||
-    ropeNumBeforePos.x - ropeNumPos.x < -1 ||
-    ropeNumBeforePos.y - ropeNumPos.y > 1 ||
-    ropeNumBeforePos.y - ropeNumPos.y < -1
+    ropeAhead.x - ropeCurrent.x > 1 ||
+    ropeAhead.x - ropeCurrent.x < -1 ||
+    ropeAhead.y - ropeCurrent.y > 1 ||
+    ropeAhead.y - ropeCurrent.y < -1
   ) {
     return true;
   }
   return false;
 };
 
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < commands.length; i++) {
   const command = commands[i];
   const { direction, value } = command;
   for (let j = 1; j <= +value; j++) {
@@ -98,13 +129,11 @@ for (let i = 0; i < 3; i++) {
     ropePoses[0].x = newHeadPos.x;
     ropePoses[0].y = newHeadPos.y;
     for (let k = 1; k <= ropeLength; k++) {
-      const ropeNumPos = ropePoses[k];
-      const ropeNumBeforePos = ropePoses[k - 1];
-      const shouldMove = shouldMoveRope(ropeNumBeforePos, ropeNumPos);
+      const ropeCurrent = ropePoses[k];
+      const ropeAhead = ropePoses[k - 1];
+      const shouldMove = shouldMoveRope({ ropeAhead, ropeCurrent });
       if (shouldMove) {
-        const newRopeNumPos = moveRope(
-          ropeVisited[k - 1][ropeVisited[k - 1].length - 2]
-        );
+        const newRopeNumPos = moveRope({ ropeCurrent, ropeAhead });
         ropeVisited[k].push(newRopeNumPos);
         ropePoses[k].x = newRopeNumPos.x;
         ropePoses[k].y = newRopeNumPos.y;
@@ -126,4 +155,4 @@ console.log(ropeVisitedSets[0]);
 console.log(ropeVisitedSets[1]);
 console.log(ropeVisitedSets[2]);
 console.log(ropeVisitedSets[3]);
-console.log(ropeVisitedSets[ropeLength]);
+console.log(ropeVisitedSets[ropeLength].size);
